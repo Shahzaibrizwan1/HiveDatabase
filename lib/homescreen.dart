@@ -35,9 +35,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          data[index].title.toString(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            Text(
+                              data[index].title.toString(),
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const Spacer(),
+                            InkWell(
+                                onTap: () {
+                                  _editDialog(
+                                      data[index],
+                                      data[index].title.toString(),
+                                      data[index].description.toString());
+                                },
+                                child: const Icon(Icons.edit)),
+                            const SizedBox(
+                              width: 15,
+                            ),
+                            InkWell(
+                              onTap: () async {
+                                delete(data[index]);
+
+                                // await Boxes.delete();
+                              },
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                              ),
+                            )
+                          ],
                         ),
                         Text(
                           data[index].description.toString(),
@@ -106,5 +133,56 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           );
         });
+  }
+
+  Future<void> _editDialog(
+      NotesModel notesmodel, String title, String description) async {
+    titleController.text = title;
+    descriptionController.text = description;
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Edit Notes"),
+            content: SingleChildScrollView(
+                child: Column(
+              children: [
+                TextFormField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                      hintText: "Update Title", border: OutlineInputBorder()),
+                ),
+                TextFormField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                      hintText: "Update Description",
+                      border: OutlineInputBorder()),
+                )
+              ],
+            )),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Cancel")),
+              TextButton(
+                  onPressed: () {
+                    notesmodel.title = titleController.text.toString();
+                    notesmodel.description =
+                        descriptionController.text.toString();
+                    notesmodel.save();
+                    Navigator.pop(context);
+                    descriptionController.clear();
+                    titleController.clear();
+                  },
+                  child: Text("Edit"))
+            ],
+          );
+        });
+  }
+
+  void delete(NotesModel NotesModel) async {
+    await NotesModel.delete();
   }
 }
